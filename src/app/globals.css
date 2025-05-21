@@ -225,3 +225,28 @@
   cursor: pointer;
   border: 2px solid white;
 }
+
+/* Fix leaflet z-index issues with navbar */
+.leaflet-pane,
+.leaflet-map-pane,
+.leaflet-marker-pane,
+.leaflet-popup-pane,
+.leaflet-overlay-pane,
+.leaflet-shadow-pane,
+.leaflet-marker-shadow,
+.leaflet-tile,
+.leaflet-marker-icon,
+.leaflet-tooltip,
+.leaflet-popup {
+  z-index: 40 !important;
+}
+
+.leaflet-control-container .leaflet-top,
+.leaflet-control-container .leaflet-bottom {
+  z-index: 45 !important;
+}
+
+nav.fixed, 
+nav.bg-white {
+  z-index: 1000 !important;
+}

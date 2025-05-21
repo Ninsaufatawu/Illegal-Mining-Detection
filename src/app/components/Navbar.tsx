@@ -13,9 +13,16 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
-            <span className="font-['Pacifico'] text-primary text-2xl">GeoGuard</span>
+            <span className="font-['Pacifico'] text-primary text-2xl">
+              <Link href="/">
+                GeoGuard
+              </Link>
+            </span>
           </div>
           <div className="hidden md:flex items-center space-x-8">
+            <Link href="/" className="text-gray-700 hover:text-primary font-medium">
+              Home
+            </Link>
             <Link href="#features" className="text-gray-700 hover:text-primary font-medium">
               Features
             </Link>
@@ -31,9 +38,7 @@ export default function Navbar() {
             <Link href="/report" className="text-gray-700 hover:text-primary font-medium">
               Report
             </Link>
-            <Link href="#contact" className="text-gray-700 hover:text-primary font-medium">
-              Contact
-            </Link>
+          
           </div>
           <div className="flex items-center">
             <Button className="bg-primary text-white hover:bg-primary/90">Sign In</Button>
