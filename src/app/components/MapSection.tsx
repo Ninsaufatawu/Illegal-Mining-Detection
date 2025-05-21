@@ -7,6 +7,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 // Don't import Leaflet directly at the top level - causes SSR errors
 // import L from 'leaflet';
 import { fixLeafletMarkerIcons } from "../utils/leaflet-config";
+import Link from "next/link";
 const EChartsReact = dynamic(() => import("echarts-for-react"), { ssr: false });
 
 // Dynamically import Leaflet components to avoid SSR issues
@@ -375,7 +376,9 @@ export default function MapSection() {
                 Your reports help us identify and stop illegal mining activities. Together, we can protect Ghana's
                 natural resources.
               </p>
-              <Button className="w-full bg-green-700 hover:bg-primary/90">Report Illegal Activity</Button>
+              <Link href="/report">
+                <Button className="w-full bg-green-700 hover:bg-primary/90">Report Illegal Activity</Button>
+              </Link>
             </div>
           </div>
         </div>

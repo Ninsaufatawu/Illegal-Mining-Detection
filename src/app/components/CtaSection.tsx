@@ -1,6 +1,7 @@
 import Image from "next/image"
 import { Flag, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import Link from "next/link"
 
 export default function CtaSection() {
   return (
@@ -15,10 +16,12 @@ export default function CtaSection() {
                 natural resources for tomorrow.
               </p>
               <div className="flex flex-wrap gap-4">
-                <Button className="bg-green-700/90 hover:bg-green-800/90">
-                  <Flag className="mr-2 h-5 w-5" />
-                  Report Illegal Mining
-                </Button>
+                <Link href="/report">
+                  <Button className="bg-green-700/90 hover:bg-green-800/90">
+                    <Flag className="mr-2 h-5 w-5" />
+                    Report Illegal Mining
+                  </Button>
+                </Link>
                 <Button variant="outline" className="border-2 border-green-500 text-primary hover:bg-primary/5">
                   <Users className="mr-2 h-5 w-5" />
                   Join Our Network

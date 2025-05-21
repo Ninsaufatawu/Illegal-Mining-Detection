@@ -2,6 +2,7 @@ import Image from "next/image"
 import { Star } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import Link from "next/link"
 
 export default function Testimonials() {
   return (
@@ -115,7 +116,9 @@ export default function Testimonials() {
                 capabilities.
               </p>
               <div className="flex flex-wrap gap-4">
-                <Button className="bg-green-700 hover:bg-green-700/90">Report Illegal Mining</Button>
+                <Link href="/report">
+                  <Button className="bg-green-700 hover:bg-green-700/90">Report Illegal Mining</Button>
+                </Link>
                 <Button variant="outline" className="border-green-700 text-green-700 hover:bg-green-700/5">
                   Become a Partner
                 </Button>
