@@ -4,9 +4,14 @@ import { useState } from "react"
 import Link from "next/link"
 import { Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import UserMenu from "./auth/UserMenu"
+import { useSession } from "next-auth/react"
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { data: session, status } = useSession()
+  
+  const isAuthenticated = status === "authenticated"
 
   return (
     <nav className="bg-white shadow-sm fixed w-full z-50">
@@ -38,10 +43,17 @@ export default function Navbar() {
             <Link href="/report" className="text-gray-700 hover:text-primary font-medium">
               Report
             </Link>
-          
           </div>
-          <div className="flex items-center">
-            <Button className="bg-primary text-white hover:bg-primary/90">Sign In</Button>
+          <div className="flex items-center space-x-3">
+            {isAuthenticated ? (
+              <UserMenu session={session} />
+            ) : (
+              <Link href="/auth">
+                <Button className="bg-primary text-white hover:bg-primary/90">
+                  Sign In
+                </Button>
+              </Link>
+            )}
             <div className="md:hidden ml-2">
               <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 rounded-md text-gray-700">
                 {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -97,6 +109,15 @@ export default function Navbar() {
             >
               Contact
             </Link>
+            {!isAuthenticated && (
+              <Link
+                href="/auth"
+                className="block px-3 py-2 text-primary font-medium"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Sign In
+              </Link>
+            )}
           </div>
         </div>
       )}

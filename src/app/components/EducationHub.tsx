@@ -16,9 +16,9 @@ export default function EducationHub() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <Card className="overflow-hidden flex flex-col h-full">
             <div className="w-full h-56 relative overflow-hidden">
-              <Image
-                src="/images/training-1.jpg"
-                alt="Training Programs"
+            <Image
+              src="/images/training-1.jpg"
+              alt="Training Programs"
                 fill
                 sizes="(max-width: 768px) 100vw, 33vw"
                 className="object-cover object-center"
@@ -47,9 +47,9 @@ export default function EducationHub() {
           </Card>
           <Card className="overflow-hidden flex flex-col h-full">
             <div className="w-full h-56 relative overflow-hidden">
-              <Image
-                src="/images/digital resources.jpg"
-                alt="Digital Resources"
+            <Image
+              src="/images/digital resources.jpg"
+              alt="Digital Resources"
                 fill
                 sizes="(max-width: 768px) 100vw, 33vw"
                 className="object-cover object-center"
@@ -78,9 +78,9 @@ export default function EducationHub() {
           </Card>
           <Card className="overflow-hidden flex flex-col h-full">
             <div className="w-full h-56 relative overflow-hidden">
-              <Image
-                src="/images/training-2.jpg"
-                alt="Community Outreach"
+            <Image
+              src="/images/training-2.jpg"
+              alt="Community Outreach"
                 fill
                 sizes="(max-width: 768px) 100vw, 33vw"
                 className="object-cover object-center"
