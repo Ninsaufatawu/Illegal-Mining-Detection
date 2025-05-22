@@ -19,41 +19,23 @@ import {
   Loader2,
   AlertCircle,
   Leaf,
+  User,
+  ShieldCheck,
   ArrowLeft
 } from "lucide-react"
 import { signIn, useSession } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 
-export default function AuthPage() {
+export default function RegisterPage() {
   const [email, setEmail] = useState<string>("")
   const [password, setPassword] = useState<string>("")
+  const [confirmPassword, setConfirmPassword] = useState<string>("")
+  const [name, setName] = useState<string>("")
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
   
   const { data: session, status } = useSession()
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const authError = searchParams.get("error")
-  
-  // Handle NextAuth errors
-  useEffect(() => {
-    if (authError) {
-      switch (authError) {
-        case "AccessDenied":
-          setError("Access denied. You may not have permission to sign in")
-          break
-        case "OAuthAccountNotLinked":
-          setError("Email already in use with a different provider")
-          break
-        case "OAuthSignin":
-        case "OAuthCallback":
-          setError("Error occurred during authentication")
-          break
-        default:
-          setError("Authentication failed. Please try again.")
-      }
-    }
-  }, [authError])
   
   // Redirect if already signed in
   useEffect(() => {
@@ -68,30 +50,44 @@ export default function AuthPage() {
     setIsLoading(true)
 
     // Validation
-    if (!email || !password) {
+    if (!email || !password || !confirmPassword || !name) {
       setError("Please fill all required fields")
       setIsLoading(false)
       return
     }
 
+    if (password !== confirmPassword) {
+      setError("Passwords do not match")
+      setIsLoading(false)
+      return
+    }
+
     try {
-      // Sign in using NextAuth's credential provider
-      const result = await signIn('credentials', {
-        redirect: false,
+      // Make an API call to register the user
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, email, password }),
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Registration failed');
+      }
+
+      // Registration successful, sign in the user
+      signIn('credentials', {
+        redirect: true,
         email,
         password,
-      })
+        callbackUrl: '/'
+      });
       
-      if (result?.error) {
-        setError(result.error === "CredentialsSignin" 
-          ? "Invalid email or password" 
-          : "Authentication failed")
-      }
-      
-      // Successful login will redirect automatically due to our session check
-    } catch (error) {
-      setError("Authentication failed. Please try again.")
-    } finally {
+    } catch (error: any) {
+      setError(error.message || "Registration failed. Please try again.")
       setIsLoading(false)
     }
   }
@@ -114,10 +110,10 @@ export default function AuthPage() {
             <Leaf className="h-7 w-7 text-green-600" />
           </div>
           <CardTitle className="text-2xl font-bold text-center text-green-800">
-            Welcome back
+            Create account
           </CardTitle>
           <CardDescription className="text-center text-gray-600">
-            Sign in to your GeoGuard account
+            Join GeoGuard to help protect our environment
           </CardDescription>
         </CardHeader>
 
@@ -130,6 +126,22 @@ export default function AuthPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name" className="text-sm font-medium text-gray-700">Full Name</Label>
+              <div className="relative">
+                <User className="absolute left-3 top-3.5 h-4 w-4 text-gray-400" strokeWidth={2} />
+                <Input
+                  id="name"
+                  type="text"
+                  placeholder="Enter your full name"
+                  className="pl-10 h-12 border border-gray-300 rounded-md"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+            
             <div className="space-y-2">
               <Label htmlFor="email" className="text-sm font-medium text-gray-700">Email</Label>
               <div className="relative">
@@ -153,7 +165,7 @@ export default function AuthPage() {
                 <Input
                   id="password"
                   type="password"
-                  placeholder="Enter your password"
+                  placeholder="Create a password"
                   className="pl-10 h-12 border border-gray-300 rounded-md"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -162,11 +174,20 @@ export default function AuthPage() {
               </div>
             </div>
 
-            <div className="flex justify-between items-center">
-              <div></div>
-              <a href="#" className="text-sm text-green-600 hover:text-green-800 hover:underline font-medium">
-                Forgot password?
-              </a>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">Confirm Password</Label>
+              <div className="relative">
+                <ShieldCheck className="absolute left-3 top-3.5 h-4 w-4 text-gray-400" strokeWidth={2} />
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  placeholder="Confirm your password"
+                  className="pl-10 h-12 border border-gray-300 rounded-md"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                />
+              </div>
             </div>
 
             <Button 
@@ -179,7 +200,7 @@ export default function AuthPage() {
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                   Processing...
                 </>
-              ) : "Sign In"}
+              ) : "Create Account"}
             </Button>
           </form>
 
@@ -206,15 +227,15 @@ export default function AuthPage() {
               <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36	c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path>
               <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571	c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path>
             </svg>
-            <span className="font-medium text-gray-700">Sign in with Google</span>
+            <span className="font-medium text-gray-700">Sign up with Google</span>
           </Button>
         </CardContent>
 
         <CardFooter className="flex justify-center pt-1 pb-6">
           <div className="text-sm text-center">
-            Don't have an account?
-            <a href="/auth/register" className="text-green-600 ml-1.5 hover:text-green-800 hover:underline font-medium">
-              Create account
+            Already have an account?
+            <a href="/auth" className="text-green-600 ml-1.5 hover:text-green-800 hover:underline font-medium">
+              Sign in
             </a>
           </div>
         </CardFooter>

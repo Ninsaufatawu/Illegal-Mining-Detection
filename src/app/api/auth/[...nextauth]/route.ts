@@ -1,17 +1,7 @@
 import NextAuth from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
 import CredentialsProvider from "next-auth/providers/credentials"
-
-// In a production app, you would use a real database
-// This is just a simple implementation for demonstration
-const users = [
-  {
-    id: "1",
-    name: "Demo User",
-    email: "demo@example.com",
-    password: "password123", // In production, this would be hashed
-  },
-]
+import { users } from "../users"
 
 // Configure NextAuth with Google and credentials providers
 const handler = NextAuth({
