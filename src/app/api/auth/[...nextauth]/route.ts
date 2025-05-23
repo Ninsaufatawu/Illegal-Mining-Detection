@@ -43,6 +43,26 @@ const handler = NextAuth({
     error: '/auth', // Error code passed in query string as ?error=
   },
   callbacks: {
+    // Force all OAuth callbacks to use the production URL
+    redirect({ url, baseUrl }) {
+      // Always use the production URL for redirects
+      const productionUrl = "https://illegal-mining-detection.vercel.app";
+      
+      // If the URL is already using the production domain, return it as is
+      if (url.startsWith(productionUrl)) {
+        return url;
+      }
+      
+      // For relative URLs, append them to the production URL
+      if (url.startsWith('/')) {
+        return `${productionUrl}${url}`;
+      }
+      
+      // For other URLs, just use the production URL
+      return productionUrl;
+    },
+    
+    // Keep existing callbacks
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id

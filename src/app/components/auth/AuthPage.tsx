@@ -106,7 +106,7 @@ export default function AuthPage() {
         <div className="w-full relative p-4">
           <a href="/" className="absolute top-4 left-4 p-2 rounded-full bg-green-100 hover:bg-green-200 transition-colors">
             <ArrowLeft size={20} className="text-green-700" />
-          </a>
+            </a>
         </div>
 
         <CardHeader className="pb-4 flex flex-col items-center space-y-2">
@@ -165,9 +165,9 @@ export default function AuthPage() {
             <div className="flex justify-between items-center">
               <div></div>
               <a href="#" className="text-sm text-green-600 hover:text-green-800 hover:underline font-medium">
-                Forgot password?
+                  Forgot password?
               </a>
-            </div>
+              </div>
 
             <Button 
               type="submit" 
