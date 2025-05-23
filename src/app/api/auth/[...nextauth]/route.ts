@@ -3,12 +3,22 @@ import GoogleProvider from "next-auth/providers/google"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { users } from "../users"
 
+// The production URL
+const PRODUCTION_URL = "https://illegal-mining-detection.vercel.app";
+
 // Configure NextAuth with Google and credentials providers
 const handler = NextAuth({
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      // Add explicit configuration for authorization URL
+      authorization: {
+        params: {
+          // Force specific redirect_uri parameter instead of deriving it from request
+          redirect_uri: `${PRODUCTION_URL}/api/auth/callback/google`,
+        },
+      },
     }),
     CredentialsProvider({
       name: "Credentials",
@@ -37,32 +47,33 @@ const handler = NextAuth({
       },
     }),
   ],
+  // Explicitly set the base URL to the production URL
+  // This overrides any dynamic determination of the URL
+  basePath: "/api/auth",
+  baseUrl: PRODUCTION_URL,
+  
   pages: {
     signIn: '/auth',
     signOut: '/',
-    error: '/auth', // Error code passed in query string as ?error=
+    error: '/auth', 
   },
   callbacks: {
     // Force all OAuth callbacks to use the production URL
     redirect({ url, baseUrl }) {
       // Always use the production URL for redirects
-      const productionUrl = "https://illegal-mining-detection.vercel.app";
-      
-      // If the URL is already using the production domain, return it as is
-      if (url.startsWith(productionUrl)) {
-        return url;
-      }
-      
-      // For relative URLs, append them to the production URL
       if (url.startsWith('/')) {
-        return `${productionUrl}${url}`;
+        return `${PRODUCTION_URL}${url}`
       }
       
-      // For other URLs, just use the production URL
-      return productionUrl;
+      // If it's not a relative URL and not starting with our production domain,
+      // redirect to the home page of our production site
+      if (!url.startsWith(PRODUCTION_URL)) {
+        return PRODUCTION_URL
+      }
+      
+      return url
     },
     
-    // Keep existing callbacks
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id
@@ -71,7 +82,6 @@ const handler = NextAuth({
       return token
     },
     async session({ session, token }) {
-      // Send properties to the client, like an access_token and user id from a provider
       if (session.user) {
         session.user.id = token.id as string
       }
@@ -81,6 +91,8 @@ const handler = NextAuth({
   session: {
     strategy: "jwt",
   },
+  // Add debug mode to help troubleshoot the issue
+  debug: process.env.NODE_ENV !== "production",
 })
 
 export { handler as GET, handler as POST } 
