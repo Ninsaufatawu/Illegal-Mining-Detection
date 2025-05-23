@@ -3,8 +3,11 @@ import GoogleProvider from "next-auth/providers/google"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { users } from "../users"
 
-// The production URL
-const PRODUCTION_URL = "https://illegal-mining-detection.vercel.app";
+// Determine the URL based on environment
+const isProduction = process.env.NODE_ENV === "production";
+const BASE_URL = isProduction 
+  ? "https://illegal-mining-detection.vercel.app"
+  : process.env.NEXTAUTH_URL || "http://localhost:3000";
 
 // Configure NextAuth with Google and credentials providers
 const handler = NextAuth({
@@ -12,13 +15,14 @@ const handler = NextAuth({
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      // Add explicit configuration for authorization URL
-      authorization: {
-        params: {
-          // Force specific redirect_uri parameter instead of deriving it from request
-          redirect_uri: `${PRODUCTION_URL}/api/auth/callback/google`,
+      // Only set explicit redirect_uri in production
+      ...(isProduction && {
+        authorization: {
+          params: {
+            redirect_uri: `${BASE_URL}/api/auth/callback/google`,
+          },
         },
-      },
+      }),
     }),
     CredentialsProvider({
       name: "Credentials",
@@ -47,52 +51,47 @@ const handler = NextAuth({
       },
     }),
   ],
-  // Explicitly set the base URL to the production URL
-  // This overrides any dynamic determination of the URL
-  basePath: "/api/auth",
-  baseUrl: PRODUCTION_URL,
-  
   pages: {
     signIn: '/auth',
     signOut: '/',
     error: '/auth', 
   },
   callbacks: {
-    // Force all OAuth callbacks to use the production URL
+    // Conditionally handle redirects based on environment
     redirect({ url, baseUrl }) {
-      // Always use the production URL for redirects
+      // For relative URLs, use the appropriate base URL
       if (url.startsWith('/')) {
-        return `${PRODUCTION_URL}${url}`
+        return `${BASE_URL}${url}`;
       }
       
-      // If it's not a relative URL and not starting with our production domain,
-      // redirect to the home page of our production site
-      if (!url.startsWith(PRODUCTION_URL)) {
-        return PRODUCTION_URL
+      // For URLs that don't include our domain, redirect to our base URL
+      if (!url.startsWith(BASE_URL)) {
+        return BASE_URL;
       }
       
-      return url
+      // Otherwise return as is
+      return url;
     },
     
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id
-        token.email = user.email
+        token.id = user.id;
+        token.email = user.email;
       }
-      return token
+      return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id as string
+        session.user.id = token.id as string;
       }
-      return session
+      return session;
     },
   },
   session: {
     strategy: "jwt",
   },
-  // Add debug mode to help troubleshoot the issue
-  debug: process.env.NODE_ENV !== "production",
+  // Help debug auth issues by enabling in both environments
+  debug: true,
 })
 
 export { handler as GET, handler as POST } 
