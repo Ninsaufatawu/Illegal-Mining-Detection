@@ -27,38 +27,52 @@ export type ReportData = {
  */
 export async function storeReport(reportData: ReportData): Promise<{ success: boolean; report_id?: string; error?: string }> {
   try {
-    console.log('Storing report in Supabase:', {
-      ...reportData,
-      // Remove potentially sensitive data from logs
-      user_ip: reportData.user_ip ? '[REDACTED]' : undefined,
-      user_agent: reportData.user_agent ? '[REDACTED]' : undefined,
+    // Add more detailed logging to debug missing fields
+    console.log('Storing report in Supabase with full data:', {
+      report_id: reportData.report_id,
+      report_type: reportData.report_type,
+      threat_level: reportData.threat_level,
+      mining_activity_type: reportData.mining_activity_type || 'MISSING', // Debug
+      incident_description: reportData.incident_description || 'MISSING', // Debug
+      location_lat: reportData.location_lat,
+      location_lng: reportData.location_lng,
+      evidence_files: reportData.evidence_files ? reportData.evidence_files.length : 0,
+      user_agent: reportData.user_agent ? 'PRESENT' : 'MISSING',
     });
     
     // Ensure we have a report ID
     const reportId = reportData.report_id || `ID-${uuidv4().substring(0, 8).toUpperCase()}`;
     
+    // Create a data object to verify what's being inserted
+    const insertData = {
+      id: uuidv4(),
+      report_id: reportId,
+      report_type: reportData.report_type,
+      threat_level: reportData.threat_level,
+      incident_description: reportData.incident_description || '', // Ensure a default value
+      mining_activity_type: reportData.mining_activity_type || '', // Ensure a default value
+      location_lat: reportData.location_lat,
+      location_lng: reportData.location_lng,
+      location_description: reportData.location_description || '',
+      evidence_files: reportData.evidence_files || [],
+      blur_faces: reportData.blur_faces ?? true,
+      strip_location: reportData.strip_location ?? true,
+      status: reportData.status || 'pending',
+      created_at: new Date().toISOString(),
+      user_id: reportData.user_id,
+      user_ip: reportData.user_ip,
+      user_agent: reportData.user_agent,
+    };
+    
+    console.log('Final insert data structure:', {
+      mining_activity_type: insertData.mining_activity_type,
+      incident_description: insertData.incident_description,
+    });
+    
     // Store report data in Supabase
     const { data, error } = await supabase
       .from('mining_reports')
-      .insert({
-        id: uuidv4(),
-        report_id: reportId,
-        report_type: reportData.report_type,
-        threat_level: reportData.threat_level,
-        incident_description: reportData.incident_description,
-        mining_activity_type: reportData.mining_activity_type,
-        location_lat: reportData.location_lat,
-        location_lng: reportData.location_lng,
-        location_description: reportData.location_description,
-        evidence_files: reportData.evidence_files,
-        blur_faces: reportData.blur_faces,
-        strip_location: reportData.strip_location,
-        status: reportData.status || 'pending',
-        created_at: new Date().toISOString(),
-        user_id: reportData.user_id,
-        user_ip: reportData.user_ip,
-        user_agent: reportData.user_agent,
-      })
+      .insert(insertData)
       .select('report_id');
     
     if (error) {

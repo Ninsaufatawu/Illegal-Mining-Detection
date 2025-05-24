@@ -89,6 +89,9 @@ export default function ReportPage() {
   const [userTypeError, setUserTypeError] = useState<boolean>(false)
   const searchResultsRef = useRef<HTMLDivElement>(null)
   const [mapKey, setMapKey] = useState<string>(`map-${Math.random().toString(36).substring(2, 9)}`)
+  const [miningType, setMiningType] = useState<string>("")
+  const [description, setDescription] = useState<string>("")
+  const [miningTypeError, setMiningTypeError] = useState<boolean>(false)
 
   // Close search results when clicking outside
   useEffect(() => {
@@ -135,6 +138,11 @@ export default function ReportPage() {
       return
     }
 
+    if (currentStep === 2 && !miningType) {
+      setMiningTypeError(true)
+      return
+    }
+
     if (currentStep === 3 && !currentLocation) {
       setLocationSelectionError(true)
       return
@@ -156,30 +164,34 @@ export default function ReportPage() {
   }
 
   const handleSubmit = async () => {
+    // Validate mining type before submission
+    if (!miningType) {
+      setCurrentStep(2)
+      setMiningTypeError(true)
+      window.scrollTo(0, 0)
+      return
+    }
+
+    // Add logging to debug the values of miningType and description
+    console.log('Mining Type before submission:', miningType);
+    console.log('Description before submission:', description);
+
     // Generate a random report ID
     const randomId = Math.random().toString(36).substring(2, 10).toUpperCase();
     const newReportId = `ID-${randomId}`;
     setReportId(newReportId);
     
     try {
-      // Get form field values
-      const miningTypeSelect = document.getElementById('mining-type') as HTMLSelectElement;
-      const descriptionTextarea = document.getElementById('description') as HTMLTextAreaElement;
-      
-      const miningType = miningTypeSelect?.value || '';
-      const incidentDescription = descriptionTextarea?.value || '';
-      
       // Convert files to file names for storage
-      // In a real app, you would upload these files to storage and store URLs
       const fileNames = files.map(file => file.name);
       
-      // Store the report in Supabase
-      const result = await storeReport({
+      // Create the report data object to verify data
+      const reportData = {
         report_id: newReportId,
         report_type: reportType,
         threat_level: threatLevel[0],
         mining_activity_type: miningType,
-        incident_description: incidentDescription,
+        incident_description: description,
         location_lat: currentLocation?.lat,
         location_lng: currentLocation?.lng,
         location_description: searchQuery || '',
@@ -187,7 +199,15 @@ export default function ReportPage() {
         blur_faces: blurFaces,
         strip_location: stripLocation,
         user_agent: navigator.userAgent,
+      };
+      
+      console.log('Full report data before sending to Supabase:', {
+        ...reportData,
+        user_agent: '[REDACTED]',
       });
+      
+      // Store the report in Supabase
+      const result = await storeReport(reportData);
       
       console.log('Report submission result:', result);
       
@@ -222,6 +242,8 @@ export default function ReportPage() {
   const resetForm = () => {
     setCurrentStep(1)
     setReportType("")
+    setMiningType("")
+    setDescription("")
     setThreatLevel([2])
     setLocationTab("map")
     setIsSubmitted(false)
@@ -235,6 +257,7 @@ export default function ReportPage() {
     setSearchQuery("")
     setSearchResults([])
     setUserTypeError(false)
+    setMiningTypeError(false)
     window.scrollTo(0, 0)
   }
   
@@ -247,19 +270,44 @@ export default function ReportPage() {
     setIsLoadingLocation(true)
     setLocationError(null)
     
+    // Use high accuracy positioning options for precise location
+    const options = {
+      enableHighAccuracy: true,
+      timeout: 10000,   // Longer timeout for better accuracy
+      maximumAge: 0     // Don't use cached position
+    };
+    
     navigator.geolocation.getCurrentPosition(
       (position) => {
         setCurrentLocation({
           lat: position.coords.latitude,
           lng: position.coords.longitude
         })
-        setIsLoadingLocation(false)
+        
+        // Fetch location name from coordinates
+        const reverseGeocode = async (lat: number, lng: number) => {
+          try {
+            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18`);
+            if (response.ok) {
+              const data = await response.json();
+              if (data && data.display_name) {
+                setSearchQuery(data.display_name);
+              }
+            }
+          } catch (error) {
+            console.error('Error reverse geocoding:', error);
+          }
+        };
+        
+        reverseGeocode(position.coords.latitude, position.coords.longitude);
+        setIsLoadingLocation(false);
       },
       (error) => {
-        setLocationError("Unable to retrieve your location")
+        console.error('Geolocation error:', error);
+        setLocationError("Unable to retrieve your location. Error: " + error.message)
         setIsLoadingLocation(false)
       },
-      { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+      options
     )
   }
   
@@ -341,7 +389,12 @@ export default function ReportPage() {
         return (
           <IncidentDetails 
             threatLevel={threatLevel} 
-            setThreatLevel={setThreatLevel} 
+            setThreatLevel={setThreatLevel}
+            miningType={miningType}
+            setMiningType={setMiningType}
+            description={description}
+            setDescription={setDescription}
+            miningTypeError={miningTypeError}
           />
         )
       case 3:

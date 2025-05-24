@@ -7,6 +7,25 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 // Create a singleton instance of the Supabase client
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+// Verify Supabase connection
+(async () => {
+  try {
+    console.log('Supabase URL:', supabaseUrl ? 'Set' : 'Missing');
+    console.log('Supabase Anon Key:', supabaseAnonKey ? 'Set' : 'Missing');
+    
+    // Check if we can connect to Supabase
+    const { data, error } = await supabase.from('mining_reports').select('count', { count: 'exact', head: true });
+    
+    if (error) {
+      console.error('Supabase connection test failed:', error);
+    } else {
+      console.log('Supabase connection successful. Database is accessible.');
+    }
+  } catch (err) {
+    console.error('Error testing Supabase connection:', err);
+  }
+})();
+
 // Type definition for user data
 export type UserData = {
   id: string;
