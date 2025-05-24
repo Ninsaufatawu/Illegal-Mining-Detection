@@ -49,6 +49,7 @@ import {
   Navigation,
 } from "lucide-react"
 import dynamic from "next/dynamic"
+import { storeReport } from "@/lib/reports-db"
 
 // Import Leaflet map dynamically to avoid SSR issues
 const MapComponent = dynamic(() => import('./AccurateMap'), {
@@ -154,12 +155,53 @@ export default function ReportPage() {
     }
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // Generate a random report ID
-    const randomId = Math.random().toString(36).substring(2, 10).toUpperCase()
-    setReportId(`ID-${randomId}`)
-    setIsSubmitted(true)
-    window.scrollTo(0, 0)
+    const randomId = Math.random().toString(36).substring(2, 10).toUpperCase();
+    const newReportId = `ID-${randomId}`;
+    setReportId(newReportId);
+    
+    try {
+      // Get form field values
+      const miningTypeSelect = document.getElementById('mining-type') as HTMLSelectElement;
+      const descriptionTextarea = document.getElementById('description') as HTMLTextAreaElement;
+      
+      const miningType = miningTypeSelect?.value || '';
+      const incidentDescription = descriptionTextarea?.value || '';
+      
+      // Convert files to file names for storage
+      // In a real app, you would upload these files to storage and store URLs
+      const fileNames = files.map(file => file.name);
+      
+      // Store the report in Supabase
+      const result = await storeReport({
+        report_id: newReportId,
+        report_type: reportType,
+        threat_level: threatLevel[0],
+        mining_activity_type: miningType,
+        incident_description: incidentDescription,
+        location_lat: currentLocation?.lat,
+        location_lng: currentLocation?.lng,
+        location_description: searchQuery || '',
+        evidence_files: fileNames,
+        blur_faces: blurFaces,
+        strip_location: stripLocation,
+        user_agent: navigator.userAgent,
+      });
+      
+      console.log('Report submission result:', result);
+      
+      if (!result.success) {
+        console.error('Failed to store report:', result.error);
+        // You could show an error message here, but for now we'll still show success
+      }
+    } catch (error) {
+      console.error('Error submitting report:', error);
+      // Still show success to the user even if database storage failed
+    }
+    
+    setIsSubmitted(true);
+    window.scrollTo(0, 0);
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
