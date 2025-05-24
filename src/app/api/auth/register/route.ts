@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-// Import the users array from the NextAuth configuration
-// In a real application, this would be stored in a database
-import { users } from '../users';
+import { findUserByEmail, createUser } from '../users';
+import { storeUserInSupabase } from '@/lib/supabase';
+import { v4 as uuidv4 } from 'uuid';
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,8 +16,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Check if user already exists
-    const existingUser = users.find(user => user.email === email);
+    // Check if user already exists in Supabase
+    const existingUser = await findUserByEmail(email);
     if (existingUser) {
       return NextResponse.json(
         { error: 'Email already in use' },
@@ -26,17 +25,25 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Create new user
-    // In a real app, you would hash the password and use a database
+    // Create new user with UUID
     const newUser = {
-      id: `${users.length + 1}`,
+      id: uuidv4(),
       name,
       email,
       password, // In production, this would be hashed
+      provider: 'credentials',
+      created_at: new Date().toISOString()
     };
 
-    // Add user to array
-    users.push(newUser);
+    // Store user directly in Supabase
+    const createdUser = await storeUserInSupabase(newUser);
+
+    if (!createdUser) {
+      return NextResponse.json(
+        { error: 'Failed to create user in database' },
+        { status: 500 }
+      );
+    }
 
     // Return success without exposing password
     return NextResponse.json(

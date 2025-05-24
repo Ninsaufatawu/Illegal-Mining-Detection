@@ -1,7 +1,9 @@
 import NextAuth from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
 import CredentialsProvider from "next-auth/providers/credentials"
-import { users } from "../users"
+import { findUserByEmail } from "../users"
+import { storeUserInSupabase } from "@/lib/supabase"
+import { v4 as uuidv4 } from 'uuid'
 
 // Determine the URL based on environment
 const isProduction = process.env.NODE_ENV === "production";
@@ -33,8 +35,8 @@ const handler = NextAuth({
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null
         
-        // In a real app, look up the user in your database
-        const user = users.find(user => user.email === credentials.email)
+        // Look up the user in Supabase
+        const user = await findUserByEmail(credentials.email);
         
         // Check if user exists and password matches
         // In production, you would use a proper password comparison method
@@ -73,10 +75,29 @@ const handler = NextAuth({
       return url;
     },
     
-    async jwt({ token, user }) {
+    async jwt({ token, user, account }) {
       if (user) {
         token.id = user.id;
         token.email = user.email;
+        
+        // Store user in Supabase when they sign in
+        // For Google auth, we need to create a new user record
+        if (account?.provider === 'google') {
+          // Check if Google user already exists in Supabase
+          const existingUser = await findUserByEmail(user.email || '');
+          
+          if (!existingUser) {
+            // Create new user for Google authentication
+            await storeUserInSupabase({
+              id: uuidv4(),
+              name: user.name || '',
+              email: user.email || '',
+              provider: 'google',
+              created_at: new Date().toISOString()
+            });
+          }
+        }
+        // For credentials provider, the user is already stored during registration
       }
       return token;
     },
