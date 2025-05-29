@@ -66,10 +66,15 @@ export default function HeroSection() {
                   Report Illegal Mining
                 </Button>
               </Link>
-              <Button variant="secondary" className="bg-white text-gray-800 hover:bg-white/90 px-4 sm:px-5 py-2 h-12 sm:h-auto text-xs sm:text-sm cursor-pointer w-full sm:w-auto">
-                <FileSignature className="mr-2 h-3 sm:h-4 w-3 sm:w-4" />
-                Apply for License
-              </Button>
+              <Link href="/license">
+                <Button
+                  className="bg-white text-gray-800 hover:bg-white/90 px-4 sm:px-5 py-2 sm:py-6 h-12 sm:h-14 text-xs sm:text-sm cursor-pointer w-full sm:w-auto"
+                >
+                  <Flag className="mr-2 h-3 sm:h-4 w-3 sm:w-4" />
+                  Apply for License
+                </Button>
+              </Link>
+              
             </div>
           </div>
           <div className="w-full md:w-1/2 relative flex justify-center">

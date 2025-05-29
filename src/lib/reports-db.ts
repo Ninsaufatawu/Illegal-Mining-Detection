@@ -162,4 +162,26 @@ export async function updateReportStatus(reportId: string, status: string): Prom
     console.error(`Exception updating report ${reportId} status:`, error);
     return false;
   }
+}
+
+/**
+ * Update report evidence files
+ */
+export async function updateReportEvidence(reportId: string, evidenceFiles: string[]): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from('mining_reports')
+      .update({ evidence_files: evidenceFiles })
+      .eq('report_id', reportId);
+    
+    if (error) {
+      console.error(`Error updating report ${reportId} evidence files:`, error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error(`Exception updating report ${reportId} evidence files:`, error);
+    return false;
+  }
 } 

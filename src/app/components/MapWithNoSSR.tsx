@@ -627,7 +627,7 @@ export default function MapWithNoSSR({
         <div className="flex flex-wrap gap-1">
           <button
             onClick={getHighPrecisionLocation}
-            className={`px-2 py-1 text-xs rounded-md bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700`}
+            className={`px-2 py-1 text-xs rounded-md bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 cursor-pointer`}
             disabled={isLocationFetching || calibrationMode}
           >
             {isLocationFetching ? (
@@ -643,7 +643,7 @@ export default function MapWithNoSSR({
           
           <button
             onClick={getUltraPreciseLocation}
-            className={`px-2 py-1 text-xs rounded-md transition-colors ${
+            className={`px-2 py-1 text-xs rounded-md transition-colors cursor-pointer ${
               isUltraPrecise
                 ? 'bg-purple-500 text-white hover:bg-purple-600'
                 : 'bg-white border border-gray-300 hover:bg-gray-100'
@@ -663,7 +663,7 @@ export default function MapWithNoSSR({
           
           <button
             onClick={toggleCalibrationMode}
-            className={`px-2 py-1 text-xs rounded-md transition-colors ${
+            className={`px-2 py-1 text-xs rounded-md transition-colors cursor-pointer ${
               calibrationMode
                 ? 'bg-amber-500 text-white hover:bg-amber-600'
                 : 'bg-white border border-gray-300 hover:bg-gray-100'
@@ -678,7 +678,7 @@ export default function MapWithNoSSR({
         {(locationOffset.lat !== 0 || locationOffset.lng !== 0) && (
           <button
             onClick={resetCalibration}
-            className="px-2 py-1 text-xs rounded-md bg-red-50 text-red-700 border border-red-200 hover:bg-red-100"
+            className="px-2 py-1 text-xs rounded-md bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 cursor-pointer"
           >
             Reset calibration
           </button>

@@ -49,13 +49,13 @@ export default function Navbar() {
               <UserMenu session={session} />
             ) : (
               <Link href="/auth">
-                <Button className="bg-primary text-white hover:bg-primary/90">
+                <Button className="bg-primary text-white hover:bg-primary/90 cursor-pointer">
                   Sign In
                 </Button>
               </Link>
             )}
             <div className="md:hidden ml-2">
-              <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 rounded-md text-gray-700">
+              <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 rounded-md text-gray-700 cursor-pointer">
                 {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
               </button>
             </div>

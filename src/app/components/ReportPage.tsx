@@ -182,8 +182,34 @@ export default function ReportPage() {
     setReportId(newReportId);
     
     try {
-      // Convert files to file names for storage
-      const fileNames = files.map(file => file.name);
+      // Upload files to Supabase storage if there are any
+      let uploadedFilePaths: string[] = [];
+      
+      if (files.length > 0) {
+        // Create FormData for file upload
+        const formData = new FormData();
+        formData.append('reportId', newReportId);
+        
+        // Add all files to the form data
+        files.forEach(file => {
+          formData.append('files', file);
+        });
+        
+        // Upload files to Supabase storage via the API route
+        const uploadResponse = await fetch('/api/reports/evidence', {
+          method: 'POST',
+          body: formData,
+        });
+        
+        const uploadResult = await uploadResponse.json();
+        
+        if (uploadResult.success) {
+          uploadedFilePaths = uploadResult.filePaths;
+          console.log('Files uploaded successfully:', uploadedFilePaths);
+        } else {
+          console.error('Error uploading files:', uploadResult.error);
+        }
+      }
       
       // Create the report data object to verify data
       const reportData = {
@@ -195,7 +221,7 @@ export default function ReportPage() {
         location_lat: currentLocation?.lat,
         location_lng: currentLocation?.lng,
         location_description: searchQuery || '',
-        evidence_files: fileNames,
+        evidence_files: uploadedFilePaths, // Use the actual paths from Supabase
         blur_faces: blurFaces,
         strip_location: stripLocation,
         user_agent: navigator.userAgent,
