@@ -27,6 +27,26 @@ export default function RootLayout({
         />
         <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap" rel="stylesheet" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css" />
+        <link rel="preload" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" as="style" />
+        <link rel="preload" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" as="script" />
+        <link rel="prefetch" href="/license" as="document" />
+        <script dangerouslySetInnerHTML={{
+          __html: `
+          // Preload license page resources
+          document.addEventListener('DOMContentLoaded', function() {
+            // Preload the map component when the homepage loads
+            const mapPreloader = new Image();
+            mapPreloader.src = "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png";
+            
+            // Create a hidden link to prefetch the license page
+            const linkElement = document.createElement('link');
+            linkElement.rel = 'prefetch';
+            linkElement.href = '/license';
+            linkElement.as = 'document';
+            document.head.appendChild(linkElement);
+          });
+          `
+        }} />
       </head>
       <body className={inter.className}>
         <Providers>
